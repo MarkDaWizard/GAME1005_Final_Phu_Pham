@@ -83,10 +83,6 @@ public class CubeBehaviour : MonoBehaviour
     {
         max = Vector3.Scale(bounds.max, transform.localScale) + transform.position;
         min = Vector3.Scale(bounds.min, transform.localScale) + transform.position;
-        //GetComponent<RigidBody3D>().velocity=rb.velocity;
-        // if(!float.IsNaN(rb.velocity.x) && !float.IsNaN(rb.velocity.y) &&
-        //    !float.IsNaN(rb.velocity.z))
-        //    {
 
         if (rb.bodyType == BodyType.DYNAMIC)
         {

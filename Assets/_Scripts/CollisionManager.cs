@@ -59,30 +59,23 @@ public class CollisionManager : MonoBehaviour
                     if (r)
                     {
                         Vector3 Vr = b.rb.velocity - s.vel;
-                       // Debug.Log("rel vel " + Vr);
-                        //nr=vr.n;
-
+                      
                         float Nr = Vector3.Dot(Vr, s.collisionNormal.normalized);
-                        //coefficient of restituion e=min(ea,eb)
+                        //CoR
                         float e = Mathf.Min(b.rb.restitution, s.restitution);
-                        //impulse j=-(1+e)(vr.n)/((1/ma)+(1/mb))
+                        //Impulse Calculation
                         float j = -(1 + e) * Nr / ((1 / b.rb.mass) + (1 / s.mass));
-                        //tangent vector,t=vr-(vr.n)n=vr-Nr*n
+                        //Tangent Vector
                         Vector3 t = Vr - Nr * s.collisionNormal;
-                        //magniture of impulse, jt=-(1+e)(vr.t)/((1/ma)+(1/mb))
+                        //Magnitude
                         float jt = -(1 + e) * Vector3.Dot(Vr, t) / ((1 / b.rb.mass) + (1 / s.mass));
-                        //friction=sqrt(frictionA,frictionB)
+                        //Friction
                         float friction = Mathf.Sqrt(b.rb.friction * s.friction);
-                        //jt=max(jt,-j*friction)
                         jt = Mathf.Max(jt, -j * friction);
-                        //jt=min(jt,j*friction)
                         jt = Mathf.Min(jt, j * friction);
-                        //va'=va-jn/ma
                         //write to object
                         cubes[i].rb.velocity = b.rb.velocity - jt * s.collisionNormal.normalized / b.rb.mass;
 
-                      //  Debug.Log("cube vel " + b.rb.velocity+ " "+b.rb.velocity.magnitude);
-                        
                         spheres[k].vel = s.vel - jt * s.collisionNormal.normalized / s.mass;
                     }
                 }
@@ -137,7 +130,7 @@ public class CollisionManager : MonoBehaviour
             result = true;
             //s.isColliding = true;
 
-            //Reflect(s);
+            Reflect(s);
         }
 
     }
