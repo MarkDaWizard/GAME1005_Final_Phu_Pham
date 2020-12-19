@@ -40,41 +40,41 @@ public class CollisionManager : MonoBehaviour
                 }
             }
         }
-        bool r = false;
+        bool IsCollidingDebug = false;
         // Check each sphere against each AABB in the scene
         
         for (int k = 0; k < spheres.Length; k++)
         {
-            var s = spheres[k];
+            var Bullet = spheres[k];
             //foreach (var b in cubes)
             for (int i = 0; i < cubes.Length; i++)
             {
-                var b = cubes[i];
-                if (b.name != "Player")
+                var CubeCounter = cubes[i];
+                if (CubeCounter.name != "Player")
                 {
-                    r = false;
-                    CheckSphereAABB(s, b, out r);
-                    if (r)
+                    IsCollidingDebug = false;
+                    CheckSphereAABB(Bullet, CubeCounter, out IsCollidingDebug);
+                    if (IsCollidingDebug)
                     {
-                        Vector3 Vr = b.rb.velocity - s.vel;
+                        Vector3 RelativeV = CubeCounter.rb.velocity - Bullet.vel;
                       
-                        float Nr = Vector3.Dot(Vr, s.collisionNormal.normalized);
+                        float test = Vector3.Dot(RelativeV, Bullet.collisionNormal.normalized);
                         //CoR
-                        float e = Mathf.Min(b.rb.restitution, s.restitution);
+                        float Coefficent = Mathf.Min(CubeCounter.rb.restitution, Bullet.restitution);
                         //Impulse Calculation
-                        float j = -(1 + e) * Nr / ((1 / b.rb.mass) + (1 / s.mass));
+                        float Impulse = -(1 + Coefficent) * test / ((1 / CubeCounter.rb.mass) + (1 / Bullet.mass));
                         //Tangent Vector
-                        Vector3 t = Vr - Nr * s.collisionNormal;
+                        Vector3 TVector = RelativeV - test * Bullet.collisionNormal;
                         //Magnitude
-                        float jt = -(1 + e) * Vector3.Dot(Vr, t) / ((1 / b.rb.mass) + (1 / s.mass));
+                        float Magnitutde = -(1 + Coefficent) * Vector3.Dot(RelativeV, TVector) / ((1 / CubeCounter.rb.mass) + (1 / Bullet.mass));
                         //Friction
-                        float friction = Mathf.Sqrt(b.rb.friction * s.friction);
-                        jt = Mathf.Max(jt, -j * friction);
-                        jt = Mathf.Min(jt, j * friction);
+                        float Friction = Mathf.Sqrt(CubeCounter.rb.friction * Bullet.friction);
+                        Magnitutde = Mathf.Max(Magnitutde, -Impulse * Friction);
+                        Magnitutde = Mathf.Min(Magnitutde, Impulse * Friction);
                         //write to object
-                        cubes[i].rb.velocity = b.rb.velocity - jt * s.collisionNormal.normalized / b.rb.mass;
+                        cubes[i].rb.velocity = CubeCounter.rb.velocity - Magnitutde * Bullet.collisionNormal.normalized / CubeCounter.rb.mass;
 
-                        spheres[k].vel = s.vel - jt * s.collisionNormal.normalized / s.mass;
+                        spheres[k].vel = Bullet.vel - Magnitutde * Bullet.collisionNormal.normalized / Bullet.mass;
                     }
                 }
 
