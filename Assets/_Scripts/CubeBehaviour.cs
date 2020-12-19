@@ -73,9 +73,9 @@ public class CubeBehaviour : MonoBehaviour
         rb=GetComponent<RigidBody3D>();
         bounds = meshFilter.mesh.bounds;
         size = bounds.size;
-        rb.restitution=0.8f;
-        rb.friction=0.6f;
-        rb.mass=5.0f;
+        //rb.restitution=0.8f;
+        //rb.friction=0.6f;
+        //rb.mass=5.0f;
     }
 
     // Update is called once per frame
@@ -84,14 +84,6 @@ public class CubeBehaviour : MonoBehaviour
         max = Vector3.Scale(bounds.max, transform.localScale) + transform.position;
         min = Vector3.Scale(bounds.min, transform.localScale) + transform.position;
 
-        if (rb.bodyType == BodyType.DYNAMIC)
-        {
-            if (isGrounded)
-            {
-                //rb.velocity += rb.acceleration * Time.deltaTime;
-                transform.position += rb.velocity * Time.deltaTime;
-            }
-        }
     }
 
     private void OnDrawGizmos()

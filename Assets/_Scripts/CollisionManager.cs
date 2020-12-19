@@ -52,30 +52,10 @@ public class CollisionManager : MonoBehaviour
                 var CubeCounter = cubes[i];
                 if (CubeCounter.name != "Player")
                 {
+                    CheckAABBCube(Bullet, CubeCounter);
+
                     IsCollidingDebug = false;
-                    CheckSphereAABB(Bullet, CubeCounter, out IsCollidingDebug);
-                    if (IsCollidingDebug)
-                    {
-                        Vector3 RelativeV = CubeCounter.rb.velocity - Bullet.vel;
-                      
-                        float test = Vector3.Dot(RelativeV, Bullet.collisionNormal.normalized);
-                        //CoR
-                        float Coefficent = Mathf.Min(CubeCounter.rb.restitution, Bullet.restitution);
-                        //Impulse Calculation
-                        float Impulse = -(1 + Coefficent) * test / ((1 / CubeCounter.rb.mass) + (1 / Bullet.mass));
-                        //Tangent Vector
-                        Vector3 TVector = RelativeV - test * Bullet.collisionNormal;
-                        //Magnitude
-                        float Magnitutde = -(1 + Coefficent) * Vector3.Dot(RelativeV, TVector) / ((1 / CubeCounter.rb.mass) + (1 / Bullet.mass));
-                        //Friction
-                        float Friction = Mathf.Sqrt(CubeCounter.rb.friction * Bullet.friction);
-                        Magnitutde = Mathf.Max(Magnitutde, -Impulse * Friction);
-                        Magnitutde = Mathf.Min(Magnitutde, Impulse * Friction);
-                        //write to object
-                        cubes[i].rb.velocity = CubeCounter.rb.velocity - Magnitutde * Bullet.collisionNormal.normalized / CubeCounter.rb.mass;
-
-                        spheres[k].vel = Bullet.vel - Magnitutde * Bullet.collisionNormal.normalized / Bullet.mass;
-                    }
+                    
                 }
 
             }
@@ -84,71 +64,67 @@ public class CollisionManager : MonoBehaviour
 
     }
 
-    public static void CheckSphereAABB(BulletBehaviour s, CubeBehaviour b, out bool result)
+
+public static void CheckAABBCube(BulletBehaviour a, CubeBehaviour b)
+{
+    if ((a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+        (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+        (a.min.z <= b.max.z && a.max.z >= b.min.z))
     {
-        result = false;
-        // get box closest point to sphere center by clamping
-        var x = Mathf.Max(b.min.x, Mathf.Min(s.transform.position.x, b.max.x));
-        var y = Mathf.Max(b.min.y, Mathf.Min(s.transform.position.y, b.max.y));
-        var z = Mathf.Max(b.min.z, Mathf.Min(s.transform.position.z, b.max.z));
-
-        var distance = Math.Sqrt((x - s.transform.position.x) * (x - s.transform.position.x) +
-                                 (y - s.transform.position.y) * (y - s.transform.position.y) +
-                                 (z - s.transform.position.z) * (z - s.transform.position.z));
-
-        if ((distance < s.radius) && (!s.isColliding))
+        // determine the distances between the contact extents
+        //collision manifold
+        float[] distances =
         {
+            (b.max.x - a.min.x),
+            (a.max.x - b.min.x),
+            (b.max.y - a.min.y),
+            (a.max.y - b.min.y),
+            (b.max.z - a.min.z),
+            (a.max.z - b.min.z)
+        };
 
-            // determine the distances between the contact extents
-            float[] distances = {
-                (b.max.x - s.transform.position.x),
-                (s.transform.position.x - b.min.x),
-                (b.max.y - s.transform.position.y),
-                (s.transform.position.y - b.min.y),
-                (b.max.z - s.transform.position.z),
-                (s.transform.position.z - b.min.z)
-            };
+        float penetration = float.MaxValue;
+        Vector3 face = Vector3.zero;
 
-            float penetration = float.MaxValue;
-            Vector3 face = Vector3.zero;
-
-            // check each face to see if it is the one that connected
-            for (int i = 0; i < 6; i++)
+        // check each face to see if it is the one that connected
+        for (int i = 0; i < 6; i++)
+        {
+            if (distances[i] < penetration)
             {
-                if (distances[i] < penetration)
-                {
-                    // determine the penetration distance
-                    penetration = distances[i];
-                    face = faces[i];
-                }
+                // determine the penetration distance
+                penetration = distances[i];
+                face = faces[i];
             }
-
-            s.penetration = penetration;
-            s.collisionNormal = face;
-            result = true;
-            
-
-            Reflect(s);
         }
 
-    }
+        // set the contact properties
+        a.collisionNormal = face;
+        a.penetration = penetration;
 
-    // This helper function reflects the bullet when it hits an AABB face
+        Reflect(a);
+        }
+}
+
+
+
+// This helper function reflects the bullet when it hits an AABB face
     private static void Reflect(BulletBehaviour s)
-    {
+{
+    s.transform.position -= s.collisionNormal * s.penetration * s.speed;
+
         if ((s.collisionNormal == Vector3.forward) || (s.collisionNormal == Vector3.back))
-        {
-            s.direction = new Vector3(s.direction.x, s.direction.y, -s.direction.z);
-        }
-        else if ((s.collisionNormal == Vector3.right) || (s.collisionNormal == Vector3.left))
-        {
-            s.direction = new Vector3(-s.direction.x, s.direction.y, s.direction.z);
-        }
-        else if ((s.collisionNormal == Vector3.up) || (s.collisionNormal == Vector3.down))
-        {
-            s.direction = new Vector3(s.direction.x, -s.direction.y, s.direction.z);
-        }
+    {
+        s.direction = new Vector3(s.direction.x, s.direction.y, -s.direction.z);
     }
+    else if ((s.collisionNormal == Vector3.right) || (s.collisionNormal == Vector3.left))
+    {
+        s.direction = new Vector3(-s.direction.x, s.direction.y, s.direction.z);
+    }
+    else if ((s.collisionNormal == Vector3.up) || (s.collisionNormal == Vector3.down))
+    {
+        s.direction = new Vector3(s.direction.x, -s.direction.y, s.direction.z);
+    }
+}
 
 
     public static void CheckAABBs(CubeBehaviour a, CubeBehaviour b)
