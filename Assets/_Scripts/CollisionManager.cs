@@ -42,7 +42,7 @@ public class CollisionManager : MonoBehaviour
         }
         bool r = false;
         // Check each sphere against each AABB in the scene
-        //foreach (var s in spheres)
+        
         for (int k = 0; k < spheres.Length; k++)
         {
             var s = spheres[k];
@@ -54,8 +54,6 @@ public class CollisionManager : MonoBehaviour
                 {
                     r = false;
                     CheckSphereAABB(s, b, out r);
-                    //calculate Vr=Vb-Va
-                    // Vector3 Vr = b.rb.velocity - s.rb.velocity;
                     if (r)
                     {
                         Vector3 Vr = b.rb.velocity - s.vel;
@@ -128,7 +126,7 @@ public class CollisionManager : MonoBehaviour
             s.penetration = penetration;
             s.collisionNormal = face;
             result = true;
-            //s.isColliding = true;
+            
 
             Reflect(s);
         }
